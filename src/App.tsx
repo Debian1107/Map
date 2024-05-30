@@ -1,24 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+// import Map from "./Map";
+import { useState } from "react";
+import Map3 from "./Components/Map3";
+import { Navbar } from "./Components/Navbar";
+// import Map2 from "./Map2";
 
 function App() {
+  const [querySearch, setquerySearch] = useState([[]]);
+  console.log("in App data from search", querySearch);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className=" ">
+      {/* <Navbar getData={(e) => setquerySearch(e)} /> */}
+      <Navbar
+        getData={(e) =>
+          setquerySearch((prevQuerySearch) => [...prevQuerySearch, e])
+        }
+      />
+
+      {/* <Map center={center} zoom={zoom} style={mapStyle} /> */}
+      {/* <Map /> */}
+      {/* <Map2 /> */}
+      <Map3 queryData={querySearch} />
+      {/* <h1 className="text-xl font-bold">A pretty CSS3 popup.</h1> */}
     </div>
   );
 }
