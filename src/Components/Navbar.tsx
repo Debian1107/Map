@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+// import "dotenv";
 export const Navbar: React.FC<{
   getData: (e: any, searchOv: boolean) => void;
 }> = ({ getData }) => {
@@ -15,7 +15,7 @@ export const Navbar: React.FC<{
     };
 
     // Define the URL you want to send the POST request to
-    const url = "http://127.0.0.1:8000/get-shop/";
+    const url: string = `${process.env.REACT_APP_BACKEND_URL}`;
 
     // Define the options for the fetch request
     const options = {
