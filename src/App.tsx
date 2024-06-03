@@ -11,9 +11,11 @@ function App() {
     <div className=" ">
       {/* <Navbar getData={(e) => setquerySearch(e)} /> */}
       <Navbar
-        getData={(e) =>
-          setquerySearch((prevQuerySearch) => [...prevQuerySearch, e])
-        }
+        getData={(e, searchOv) => {
+          querySearch[0].length && searchOv
+            ? setquerySearch((prevQuerySearch) => [...prevQuerySearch, e])
+            : setquerySearch(() => [e]);
+        }}
       />
 
       {/* <Map center={center} zoom={zoom} style={mapStyle} /> */}

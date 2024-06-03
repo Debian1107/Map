@@ -10,6 +10,7 @@ import "leaflet-routing-machine";
 import L from "leaflet";
 import Routing from "./RoutingMachine";
 
+type NestedNumberOrNullArray = (number | null)[][];
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
@@ -35,8 +36,28 @@ const customIcon2 = new L.Icon({
 });
 
 function Map3({ queryData }: { queryData: never[][] }) {
-  const [merchantLocation, setmerchantLocation]: any = useState([]);
+  const [merchantLocation, setmerchantLocation]: any =
+    useState<NestedNumberOrNullArray>([[]]);
+  const [userlocation, setUserLocation] = useState([0, 0]);
+  const iconsList = [customIcon, customIcon2];
 
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation([latitude, longitude]);
+        },
+        (error) => {
+          alert("Error fetching user location: " + error.message);
+          console.error("Error fetching user location:", error);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }, []);
   return (
     <MapContainer
       center={[28.6139, 77.209]}
@@ -49,48 +70,66 @@ function Map3({ queryData }: { queryData: never[][] }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {queryData.length > 1 &&
-        queryData[1].map((obj: any) => {
+      {queryData.map((sub: any, ind: any) => {
+        return sub.map((obj: any) => {
           return (
             <>
-              <Marker position={[obj.lat, obj.long]}>
+              <Marker position={[obj.lat, obj.long]} icon={iconsList[ind]}>
                 <Popup>
                   <PlacesMarker
                     obj={obj}
+                    merchantInclusion={merchantLocation}
+                    //directions button function
                     onClose={(e) => {
-                      setmerchantLocation(e);
-                      console.log(merchantLocation);
+                      console.log(merchantLocation.length);
+                      merchantLocation.length && merchantLocation[0].length
+                        ? setmerchantLocation((prev: any) => {
+                            const exists = prev.some(
+                              (location: any) => location[0] === e[0]
+                            );
+                            if (!exists) {
+                              return [...prev, e];
+                            }
+                            return prev;
+                          })
+                        : setmerchantLocation([e]);
+                      console.log("this is it ", merchantLocation);
+                      // console.log(merchantLocation);
+                    }}
+                    //removal button function
+                    onRemove={(e) => {
+                      console.log("in the removal function");
+                      setmerchantLocation((prev: any) => {
+                        const newLocations = prev.filter(
+                          (location: any) =>
+                            location[0] !== e[0] && location[1] !== e[1]
+                        );
+                        return newLocations;
+                      });
+                      console.log(" we are exiting the removal function");
                     }}
                   />
                 </Popup>
               </Marker>
             </>
           );
-        })}
-      {queryData.length > 2 &&
-        queryData[2].map((obj: any) => {
-          return (
-            <>
-              <Marker position={[obj.lat, obj.long]} icon={customIcon2}>
-                <Popup>
-                  <PlacesMarker
-                    obj={obj}
-                    onClose={(e) => {
-                      setmerchantLocation(e);
-                      console.log(merchantLocation);
-                    }}
-                  />
-                </Popup>
-              </Marker>
-            </>
-          );
-        })}
-      <Marker position={[28.6139, 77.209]} icon={customIcon}>
-        <Popup>
-          <MyMarkerPopup onClose={() => console.log("Popup closed")} />
-        </Popup>
-      </Marker>
-      <Routing obj={[28.6139, 77.209]} obj2={merchantLocation} />
+          // );
+        });
+      })}
+      {userlocation[0] && (
+        <Marker
+          position={[userlocation[0], userlocation[1]]}
+          // icon={customIcon2}
+        >
+          <Popup>Your location</Popup>
+        </Marker>
+      )}
+
+      <Routing
+        obj={[userlocation[0], userlocation[1]]}
+        obj2={merchantLocation[0]}
+        xp={merchantLocation}
+      />
     </MapContainer>
   );
 }
@@ -110,8 +149,10 @@ export const MyMarkerPopup: React.FC<{ onClose: () => void }> = ({
 };
 export const PlacesMarker: React.FC<{
   onClose: (e: any) => void;
+  onRemove: (e: any) => void;
   obj: any;
-}> = ({ onClose, obj }) => {
+  merchantInclusion: any;
+}> = ({ onClose, obj, onRemove, merchantInclusion }) => {
   return (
     <div className="p-4 text-base bg-white rounded shadow-md max-w-xs">
       <h3 className="text-lg font-bold mb-2">{obj.name}</h3>
@@ -125,6 +166,14 @@ export const PlacesMarker: React.FC<{
       >
         Directions
       </button>
+      {merchantInclusion.some((location: any) => location[0] === obj.lat) ? (
+        <button
+          className="border-[2px] bg-red-200 mx-2 border-black w-[40%]"
+          onClick={() => onRemove([obj.lat, obj.long])}
+        >
+          Remove
+        </button>
+      ) : null}
     </div>
   );
 };

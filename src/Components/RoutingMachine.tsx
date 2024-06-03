@@ -1,5 +1,5 @@
 import { useMap } from "react-leaflet";
-import L, { LatLng } from "leaflet";
+import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -7,28 +7,28 @@ import "leaflet-control-geocoder/dist/Control.Geocoder.css";
 import "leaflet-control-geocoder/dist/Control.Geocoder.js";
 import { useEffect } from "react";
 
-const Routing: React.FC<{ obj: [number, number]; obj2: [number, number] }> = ({
-  obj,
-  obj2,
-}) => {
+const Routing: React.FC<{
+  obj: [number, number];
+  obj2: [number, number];
+  xp: any[];
+}> = ({ obj, obj2, xp }) => {
   const map = useMap();
-
+  console.log("all the routes are --> ", xp);
+  console.log("temp routes ", obj2);
   useEffect(() => {
-    if (!map || obj2.length < 2) return;
-    const customIcon = new L.Icon({
-      iconUrl: require("../placeholder.png"), // URL to your custom marker icon
-      iconSize: [25, 41], // size of the icon
-      iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
-      popupAnchor: [1, -34], // point from which the popup should open relative to the iconAnchor
-      shadowUrl: require("leaflet/dist/images/marker-shadow.png"), // URL to the marker shadow
-      shadowSize: [41, 41], // size of the shadow
-    });
+    if (!xp.length || !obj[0]) return;
+    if (!map) return;
+
     const routingControl = L.Routing.control({
       waypoints: [
         L.latLng(obj[0], obj[1]),
-        L.latLng(obj2[0], obj2[1]),
+        // L.latLng(obj2[0], obj2[1]),
+        ...xp.map((myobj) => {
+          return L.latLng(myobj[0], myobj[1]);
+        }),
         // L.latLng(28.792167, 77.113131),
       ],
+
       zoomControl: false,
       // router: new L.Routing.OSRMv1({
       // serviceUrl: "https://router.project-osrm.org/route/v1",

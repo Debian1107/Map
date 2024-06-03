@@ -1,10 +1,10 @@
 import { useState } from "react";
 
 export const Navbar: React.FC<{
-  getData: (e: any) => void;
+  getData: (e: any, searchOv: boolean) => void;
 }> = ({ getData }) => {
   const [searchQuery, setSearchquery] = useState("");
-  const [searchResult, setSearchresult] = useState(null);
+  const [searchResult, setSearchresult] = useState([]);
   const [searchOver, setsearchOver] = useState(false);
 
   const Handelsearch = () => {
@@ -54,7 +54,7 @@ export const Navbar: React.FC<{
         console.log("this is search result - ");
         console.log(searchedData);
         setSearchresult(searchedData);
-        getData(searchedData);
+        getData(searchedData, searchOver);
       })
       .catch((error) => {
         // Handle errors
@@ -72,12 +72,18 @@ export const Navbar: React.FC<{
       />
       <button
         onClick={Handelsearch}
+        disabled={searchQuery.length > 2 ? false : true}
         className=" bg-green-100 focus:bg-green-300 focus:animate-bounce px-2 border-black border-[2px]"
       >
         {searchOver ? "Search Over" : "Search"}
       </button>
       <button
-        onClick={() => setsearchOver(!searchOver)}
+        onClick={() => {
+          setsearchOver(!searchOver);
+        }}
+        disabled={
+          searchQuery.length > 2 ? false : searchResult.length ? false : true
+        }
         className=" bg-green-100 focus:bg-green-300 px-2 border-black border-[2px]"
       >
         ^
